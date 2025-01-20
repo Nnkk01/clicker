@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicker dApp</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
+</head>
+<body style="font-family: Arial, sans-serif; text-align: center; padding: 20px;">
+    <h1>Clicker dApp</h1>
+    <p>Each click costs 1 $TEA!</p>
+    <button id="connectButton" style="padding: 10px 20px; font-size: 16px;">Connect Wallet</button>
+    <br><br>
+    <button id="clickButton" style="padding: 10px 20px; font-size: 16px;" disabled>Click (1 $TEA)</button>
+    <br><br>
+    <p>Total Clicks: <span id="clickCount">0</span></p>
+
+    <script>
+        const contractAddress = "<DEPLOYED_CONTRACT_ADDRESS>"; // Вставте адресу контракту
+        const contractABI = [
+            "function click() external payable",
+            "function getClickCount() external view returns (uint256)"
+        ];
+
+        let provider, signer, contract;
+
+        const connectButton = document.getElementById("connectButton");
+        const clickButton = document.getElementById("clickButton");
+        const clickCountSpan = document.getElementById("clickCount");
+
+        connectButton.onclick = async () => {
+            if (!window.ethereum) {
+                alert("MetaMask is not installed!");
+                return;
+            }
+
+            await ethereum.request({ method: "eth_requestAccounts" });
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            signer = provider.getSigner();
+            contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+            connectButton.textContent = "Wallet Connected";
+            clickButton.disabled = false;
+
+            updateClickCount();
+        };
+
+        clickButton.onclick = async () => {
+            try {
+                const tx = await contract.click({ value: ethers.utils.parseEther("1") });
+                await tx.wait();
+                alert("Clicked!");
+                updateClickCount();
+            } catch (error) {
+                console.error(error);
+                alert("Transaction failed!");
+            }
+        };
+
+        async function updateClickCount() {
+            if (contract) {
+                const count = await contract.getClickCount();
+                clickCountSpan.textContent = count.toString();
+            }
+        }
+    </script>
+</body>
+</html>
