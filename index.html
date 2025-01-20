@@ -63,6 +63,13 @@
                 clickCountSpan.textContent = count.toString();
             }
         }
+if (typeof window.ethereum !== "undefined") {
+    const accounts = await ethereum.request({ method: "eth_accounts" });
+    if (accounts.length > 0) {
+        document.getElementById("clickButton").disabled = false; // Активуємо кнопку
+    }
+}
+
     </script>
 </body>
 </html>
